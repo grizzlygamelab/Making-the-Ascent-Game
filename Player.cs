@@ -15,7 +15,6 @@ public class Player : MonoBehaviour
     [SerializeField] private bool groundedPlayer;
     private CharacterController _controller;
     private Animator _animator;
-    private PlayerItems _items;
     private Vector3 _playerVelocity;
     
     [Header("Player Health")]
