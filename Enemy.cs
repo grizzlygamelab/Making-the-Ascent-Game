@@ -17,12 +17,14 @@ public class Enemy : MonoBehaviour
     public ParticleSystem bloodParticles;
     [SerializeField] private int _health = 10;
     private bool _canTakeDamage = true;
+    private bool _isDead = false;
     
     // Start is called before the first frame update
     void Start()
     {
         _navMeshAgent = GetComponent<NavMeshAgent>();
         _animator = GetComponentInChildren<Animator>();
+        target = GameObject.FindGameObjectWithTag("Player").transform;
     }
 
     // Update is called once per frame
@@ -30,49 +32,78 @@ public class Enemy : MonoBehaviour
     {
         _distanceToTarget = Vector3.Distance(_navMeshAgent.transform.position, target.position);
 
-        if (_distanceToTarget < attackDistance)
+        if (_isDead == false)
         {
-            _animator.SetBool("IsMoving", false);
-            _animator.SetBool("IsAttacking", true);
-            _navMeshAgent.isStopped = true;
-            
+            if (_distanceToTarget < attackDistance)
+            {
+                _animator.SetBool("IsMoving", false);
+                _animator.SetBool("IsAttacking", true);
+                _navMeshAgent.isStopped = true;
+                
+            }
+            else
+            {
+                _animator.SetBool("IsMoving", true);
+                _animator.SetBool("IsAttacking", false);
+                _navMeshAgent.isStopped = false;
+                _navMeshAgent.destination = target.position;
+            }
         }
         else
         {
-            _animator.SetBool("IsMoving", true);
-            _animator.SetBool("IsAttacking", false);
-            _navMeshAgent.isStopped = false;
-            _navMeshAgent.destination = target.position;
-           
+            _navMeshAgent.isStopped = true;
         }
+       
     }
     
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.CompareTag("Player") && _canTakeDamage)
+        if (other.gameObject.CompareTag("Weapon-Player") && _canTakeDamage)
         {
-            //Debug.Log("I ran into the enemy.");
             _canTakeDamage = false;
-            int amount = other.gameObject.GetComponent<EnemyAttack>().GetDamageAmount();
+            int amount = other.gameObject.GetComponent<PlayerAttack>().GetDamageAmount();
+            //int amount = 5;
             TakeDamage(amount);
-            //UpdatePlayerHealthUI();
             StartCoroutine(EnemyDamageCooldown());
+            
         }
     }
     
     private void TakeDamage(int damage)
     {
-        // player takes damage from the enemy
+        // enemy takes damage from the player's sword
         _health -= damage;
-        //_currentHealth--;
+        if (_health <= 0)
+        {
+            // make enemy disappear
+            //gameObject.SetActive(false);
+            _animator.SetTrigger("DeathBlow");
+            _isDead = true;
+            UpdateEnemy();
+        }
         bloodParticles.Play();
-        // update the text in the UI
-        //healthText.text = "HP: " + _currentHealth.ToString();
     }
     
     private IEnumerator EnemyDamageCooldown()
     {
         yield return new WaitForSeconds(1.5f);
         _canTakeDamage = true;
+    }
+
+    public bool IsDead()
+    {
+        return _isDead;
+    }
+
+    private void UpdateEnemy()
+    {
+        GameObject.FindObjectOfType<GameManager>().UpdateEnemyCount();
+        StartCoroutine(RemoveEnemyFromScene());
+    }
+
+    private IEnumerator RemoveEnemyFromScene()
+    {
+        yield return new WaitForSeconds(1.8f);
+        gameObject.SetActive(false);
     }
 }
