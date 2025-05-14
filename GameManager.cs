@@ -44,9 +44,14 @@ public class GameManager : MonoBehaviour
                     StartCoroutine(SpawnRoomThreeEnemies());
                 }*/
 
-                if (waveCount <= 3)
+                if (waveCount < 5)
                 {
                     StartCoroutine(SpawnRoomOneEnemies());
+                }
+
+                if (waveCount >= 5)
+                {
+                    StartCoroutine(SpawnRoomThreeEnemies());
                 }
             }
         }
@@ -81,12 +86,18 @@ public class GameManager : MonoBehaviour
     // Room 3 is the Boss area
     private IEnumerator SpawnRoomThreeEnemies()
     {
-        int numberOfEnemies = Random.Range(1, 5);
+        //int numberOfEnemies = Random.Range(1, 5);
+        int numberOfEnemies = 1;
         for (int i = 0; i < numberOfEnemies; i++)
         {
-            Instantiate(enemiesPrefab[0], roomThreeSpawnPoints[Random.Range(0, 
-                roomThreeSpawnPoints.Length)].position, Quaternion.identity);
+            /*Instantiate(enemiesPrefab[1], roomThreeSpawnPoints[Random.Range(0, 
+                roomThreeSpawnPoints.Length)].position, Quaternion.identity);*/
+            
+            Instantiate(enemiesPrefab[1], roomOneSpawnPoints[Random.Range(0, 
+                roomOneSpawnPoints.Length)].position, Quaternion.identity);
+            
             yield return new WaitForSeconds(2f);
+            
             enemyCount++;
         }
     }
